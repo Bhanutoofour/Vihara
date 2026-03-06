@@ -1,20 +1,20 @@
 const stayPlans = [
   {
-    label: "UP TO 10 GUESTS",
+    label: "UP TO 15 GUESTS",
     weekday: "₹40,000",
     weekend: "₹48,000",
     tagline: "Ideal for family getaways and intimate gatherings",
   },
   {
-    label: "UP TO 12 GUESTS",
+    label: "UP TO 20 GUESTS",
     weekday: "₹44,000",
-    weekend: "₹53,000",
+    weekend: "₹52,000",
     tagline: "Perfect for pre-wedding stays and creative escapes",
   },
   {
-    label: "UP TO 15 GUESTS",
-    weekday: "₹50,000",
-    weekend: "₹60,000",
+    label: "UP TO 25 GUESTS",
+    weekday: "₹48,000",
+    weekend: "₹56,000",
     tagline: "Ideal for extended family celebrations",
   },
 ];
