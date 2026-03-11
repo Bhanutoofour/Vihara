@@ -6,14 +6,10 @@ export const metadata: Metadata = {
   description: "Everything thoughtfully curated for your stay at Vihara.",
 };
 
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1600&q=80";
-const POOL_IMG =
-  "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80";
-const INTERIOR_IMG =
-  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80";
-const ARCH_IMG =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80";
+const HERO_IMG = "ma.png";
+const POOL_IMG = "bd.png";
+const INTERIOR_IMG = "st1.png";
+const ARCH_IMG = "tr.png";
 
 const IconContainer = ({
   children,
@@ -842,7 +838,7 @@ export default function AmenitiesPage() {
         </div>
         <div className="relative w-full" style={{ height: "420px" }}>
           <img
-            src={POOL_IMG}
+            src="as.jpg"
             alt="The Heart of the Courtyard"
             className="w-full h-full object-cover"
           />
