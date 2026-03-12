@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import "server-only";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   sendGuestBookingConfirmed,
