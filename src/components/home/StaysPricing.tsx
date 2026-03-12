@@ -200,7 +200,7 @@ export default function StaysPricing() {
             Stay a little longer. The courtyard changes with time.
           </p>
           <a
-            href="#booking"
+            href="/booking"
             className="inline-block px-10 py-3.5 border border-[#D9B59D] text-[#D9B59D] font-['Jost'] text-sm tracking-widest uppercase hover:bg-[#D9B59D] hover:text-[#354E41] transition-all duration-300 rounded-[16px]"
           >
             Check Availability →

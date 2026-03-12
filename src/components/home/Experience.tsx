@@ -188,7 +188,7 @@ export default function Experience() {
             title="Modern Architecture"
             description="Contemporary design with traditional terracotta elements and expansive glass"
             imageBg="bg-[#4a6655]"
-            bgImage="modern.webp"
+            bgImage="/modern.webp"
           />
         </div>
 
