@@ -36,7 +36,7 @@ const featured = [
     ),
     title: "Statue of Equality",
     desc: "The 216-foot Statue of Equality in Hyderabad commemorates 11th-century saint Sri Ramanujacharya, promoting equality, social justice, and inclusion.",
-    img: "/stu.png",
+    img: "/stu.webp",
   },
   {
     icon: (
@@ -87,7 +87,7 @@ const featured = [
     ),
     title: "Swimming Pool",
     desc: "Take a refreshing dip in our infinity pool surrounded by LUCH greens trees and tropical gardens.",
-    img: "/sp.png",
+    img: "/sp.webp",
   },
   {
     icon: (
@@ -166,7 +166,7 @@ const featured = [
     ),
     title: "farm Grove",
     desc: "Stroll through our lush farm grove and experience the authentic tropical ambiance of farms.",
-    img: "fr.png",
+    img: "fr.webp",
   },
   {
     icon: (

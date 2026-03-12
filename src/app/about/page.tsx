@@ -6,10 +6,10 @@ export const metadata: Metadata = {
 };
 
 const HERO_IMG = "/about1.webp";
-const IMG_BLUEPRINT = "about.png";
-const IMG_WATERFALL = "interior.png";
-const IMG_GARDEN = "opensk.png";
-const IMG_POOL = "ramb.png";
+const IMG_BLUEPRINT = "about.webp";
+const IMG_WATERFALL = "interior.webp";
+const IMG_GARDEN = "opensk.webp";
+const IMG_POOL = "ramb.webp";
 const IMG_YOGA = "ac.webp";
 
 const amenities = [
@@ -61,7 +61,7 @@ export default function AboutPage() {
           <div>
             <div className="w-48 h-32 overflow-hidden mb-6 opacity-80 rounded-[16px]">
               <img
-                src="/about.png"
+                src="/about.webp"
                 alt="blueprint"
                 className="w-full h-full object-fullr"
               />

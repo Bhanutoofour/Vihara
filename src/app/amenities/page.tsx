@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   description: "Everything thoughtfully curated for your stay at Vihara.",
 };
 
-const HERO_IMG = "ma.png";
-const POOL_IMG = "bd.png";
-const INTERIOR_IMG = "st1.png";
-const ARCH_IMG = "tr.png";
+const HERO_IMG = "ma.webp";
+const POOL_IMG = "bd.webp";
+const INTERIOR_IMG = "st1.webp";
+const ARCH_IMG = "tr.webp";
 
 const IconContainer = ({
   children,
@@ -795,12 +795,12 @@ export default function AmenitiesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               {
-                img: INTERIOR_IMG,
+                img: "st1.webp",
                 title: "Private Courtyard Spaces",
                 desc: "Intimate seating areas for relaxation and conversation",
               },
               {
-                img: ARCH_IMG,
+                img: "ma.webp",
                 title: "Contemporary Design",
                 desc: "Terracotta walls meet modern glass and steel",
               },
@@ -838,7 +838,7 @@ export default function AmenitiesPage() {
         </div>
         <div className="relative w-full" style={{ height: "420px" }}>
           <img
-            src="as.jpg"
+            src="as.webp"
             alt="The Heart of the Courtyard"
             className="w-full h-full object-cover"
           />

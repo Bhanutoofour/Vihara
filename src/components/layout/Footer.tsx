@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Image
-              src="/vihara-heading.png"
+              src="/vihara-heading.webp"
               alt="Vihara"
               width={110}
               height={55}

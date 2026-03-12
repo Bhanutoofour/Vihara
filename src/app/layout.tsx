@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords:
     "vihara, courtyard, hyderabad, staycation, private events, celebrations, kothur",
   icons: {
-    icon: "/icon.png",
+    icon: "/icon.webp",
   },
 };
 

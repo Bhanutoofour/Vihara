@@ -12,7 +12,7 @@ export default function Hero() {
       {/* Background */}
       <div className="absolute inset-0">
         <Image
-          src="/hero.webp"
+          src="/as2.webp"
           alt="Vihara The Courtyard"
           fill
           priority
@@ -31,7 +31,7 @@ export default function Hero() {
 
         <div className="flex justify-center animate-fadeInUp delay-2">
           <Image
-            src="/vihara-heading.png"
+            src="/vihara-heading.webp"
             alt="Vihara"
             width={450}
             height={120}

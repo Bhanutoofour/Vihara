@@ -917,7 +917,7 @@ export default function BookingPage() {
                         Upload payment screenshot
                       </p>
                       <p className="text-xs text-[#888] mt-1">
-                        JPG, PNG — up to 5MB
+                        JPG, webp — up to 5MB
                       </p>
                     </div>
                   )}
