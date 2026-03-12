@@ -12,3 +12,10 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+const nextConfig = {
+  images: {
+    formats: ["image/webp", "image/avif"],
+  },
+};
+
+export default nextConfig;
