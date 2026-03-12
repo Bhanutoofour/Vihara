@@ -11,6 +11,7 @@ const jost = Jost({
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
   keywords:
     "vihara, courtyard, hyderabad, staycation, private events, celebrations, kothur",
   icons: {
-    icon: "/icon.webp",
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -47,8 +49,6 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
-        import WhatsAppButton from "@/components/WhatsAppButton"; // Inside your{" "}
-        <body> tag, add before the closing </body>:
         <WhatsAppButton />
       </body>
     </html>
