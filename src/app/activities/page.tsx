@@ -354,7 +354,7 @@ const featured = [
     ),
     title: "BonFire",
     desc: "End your day with warmth, laughter, and the magical glow of a crackling bonfire, Sip, stargaze, and soak in the warmth of our curated evening bonfire experience",
-    img: "bf.png",
+    img: "bp.webp",
   },
 ];
 
