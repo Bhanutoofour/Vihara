@@ -47,6 +47,9 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
+        import WhatsAppButton from "@/components/WhatsAppButton"; // Inside your{" "}
+        <body> tag, add before the closing </body>:
+        <WhatsAppButton />
       </body>
     </html>
   );

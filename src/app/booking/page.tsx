@@ -340,32 +340,45 @@ export default function BookingPage() {
           <div className="space-y-10">
             {/* Dates & Guests */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                {
-                  label: "Check In",
-                  type: "date",
-                  val: checkIn,
-                  set: setCheckIn,
-                },
-                {
-                  label: "Check Out",
-                  type: "date",
-                  val: checkOut,
-                  set: setCheckOut,
-                },
-              ].map((f) => (
-                <div key={f.label} className="bg-white p-4">
-                  <label className="text-xs text-[#888] block mb-1">
-                    {f.label}
-                  </label>
-                  <input
-                    type={f.type}
-                    value={f.val}
-                    onChange={(e) => f.set(e.target.value)}
-                    className="w-full text-sm outline-none border-b border-[#eee] pb-1 bg-transparent"
-                  />
-                </div>
-              ))}
+              <div className="bg-white p-4">
+                <label className="text-xs text-[#888] block mb-1">
+                  Check In
+                </label>
+                <input
+                  type="date"
+                  value={checkIn}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => {
+                    setCheckIn(e.target.value);
+                    if (checkOut && checkOut <= e.target.value) setCheckOut("");
+                  }}
+                  className="w-full text-sm outline-none border-b border-[#eee] pb-1 bg-transparent"
+                />
+              </div>
+              <div className="bg-white p-4">
+                <label className="text-xs text-[#888] block mb-1">
+                  Check Out
+                </label>
+                <input
+                  type="date"
+                  value={checkOut}
+                  min={
+                    checkIn
+                      ? new Date(new Date(checkIn).getTime() + 86400000)
+                          .toISOString()
+                          .split("T")[0]
+                      : new Date().toISOString().split("T")[0]
+                  }
+                  disabled={!checkIn}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                  className="w-full text-sm outline-none border-b border-[#eee] pb-1 bg-transparent disabled:opacity-40 disabled:cursor-not-allowed"
+                />
+                {!checkIn && (
+                  <p className="text-xs text-[#aaa] mt-1">
+                    Select check-in first
+                  </p>
+                )}
+              </div>
               <div className="bg-white p-4">
                 <label className="text-xs text-[#888] block mb-1">Guests</label>
                 <select
@@ -917,7 +930,7 @@ export default function BookingPage() {
                         Upload payment screenshot
                       </p>
                       <p className="text-xs text-[#888] mt-1">
-                        JPG, webp — up to 5MB
+                        JPG, PNG — up to 5MB
                       </p>
                     </div>
                   )}
