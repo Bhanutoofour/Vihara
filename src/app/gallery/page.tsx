@@ -2,8 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1600&q=80";
+const HERO_IMG = "/ab (1).webp";
 
 const categories = [
   "All",
@@ -17,66 +16,40 @@ const categories = [
 ];
 
 const photos = [
-  {
-    src: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-    cat: "Property",
-    title: "The Estate",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
-    cat: "Nature",
-    title: "Waterfall",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80",
-    cat: "Amenities",
-    title: "Swimming Pool",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=800&q=80",
-    cat: "Activities",
-    title: "Yoga Session",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
-    cat: "Rooms",
-    title: "Bedroom Suite",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
-    cat: "Property",
-    title: "Architecture",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-    cat: "Property",
-    title: "Courtyard",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80",
-    cat: "Nature",
-    title: "Coconut Grove",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80",
-    cat: "Views",
-    title: "Scenic Views",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=800&q=80",
-    cat: "Activities",
-    title: "Cycling Trails",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=800&q=80",
-    cat: "Nature",
-    title: "Bird Watching",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
-    cat: "Dining",
-    title: "Event Space",
-  },
+  { src: "/ab (1).webp", cat: "Activities", title: "Image 1" },
+  { src: "/ab (3).webp", cat: "Activities", title: "Image 3" },
+  { src: "/ab (4).webp", cat: "Amenities", title: "Image 4" },
+  { src: "/ab (5).webp", cat: "Rooms", title: "Image 5" },
+  { src: "/ab (6).webp", cat: "Rooms", title: "Image 6" },
+  { src: "/ab (7).webp", cat: "Rooms", title: "Image 7" },
+  { src: "/ma.webp", cat: "Property", title: "Image 59" },
+  { src: "/ab (11).jpg", cat: "Property", title: "Image 11" },
+  { src: "/ab (12).jpg", cat: "Property", title: "Image 12" },
+  { src: "/ab (13).jpg", cat: "Property", title: "Image 13" },
+  { src: "/ab (14).jpg", cat: "Dining", title: "Image 14" },
+  { src: "ct.webp", cat: "Rooms", title: "Image 16" },
+
+  { src: "/ab (16).webp", cat: "Rooms", title: "Image 16" },
+  { src: "/ab (19).webp", cat: "Rooms", title: "Image 19" },
+  { src: "/ab (24).webp", cat: "Dining", title: "Image 24" },
+  { src: "/ab (25).webp", cat: "Nature", title: "Image 25" },
+
+  { src: "/ab (35).webp", cat: "Rooms", title: "Image 35" },
+  { src: "/ab (36).webp", cat: "Amenities", title: "Image 36" },
+  { src: "/ab (41).webp", cat: "Nature", title: "Image 41" },
+  { src: "/ab (45).webp", cat: "Dining", title: "Image 45" },
+
+  { src: "/ab (51).webp", cat: "Rooms", title: "Image 51" },
+  { src: "/ab (52).webp", cat: "Rooms", title: "Image 52" },
+  { src: "/ab (53).webp", cat: "Dining", title: "Image 53" },
+  { src: "/ab (55).webp", cat: "Rooms", title: "Image 55" },
+  { src: "/ab (56).webp", cat: "Rooms", title: "Image 56" },
+  { src: "/ab (57).webp", cat: "Nature", title: "Image 57" },
+  { src: "/ab (59).webp", cat: "Property", title: "Image 59" },
+  { src: "/ab.webp", cat: "Property", title: "Image 59" },
+  { src: "/ac.webp", cat: "Property", title: "Image 59" },
+  { src: "/opensky.webp", cat: "Property", title: "Image 59" },
+  { src: "/modern.webp", cat: "Property", title: "Image 59" },
 ];
 
 export default function GalleryPage() {
@@ -99,14 +72,7 @@ export default function GalleryPage() {
         />
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10 px-4">
-          <h1
-            className="text-4xl md:text-6xl text-white mb-4"
-            style={{
-              fontWeight: 700,
-              letterSpacing: "0.02em",
-              textShadow: "2px 2px 8px rgba(0,0,0,0.5)",
-            }}
-          >
+          <h1 className="text-4xl md:text-6xl text-white mb-4 font-bold">
             Gallery
           </h1>
           <p className="text-xl text-[#DCD7CD]">
@@ -117,15 +83,15 @@ export default function GalleryPage() {
 
       {/* CATEGORY FILTER */}
       <section className="bg-white border-b border-[#DCD7CD] sticky top-[60px] z-40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex gap-2 overflow-x-auto">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActive(cat)}
-              className={`px-10 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+              className={`px-6 py-2 rounded-full text-sm ${
                 active === cat
                   ? "bg-[#354E41] text-white"
-                  : "bg-[#DCD7CD]/40 text-[#354E41] hover:bg-[#DCD7CD]"
+                  : "bg-[#DCD7CD]/40 text-[#354E41]"
               }`}
             >
               {cat}
@@ -135,76 +101,47 @@ export default function GalleryPage() {
       </section>
 
       {/* PHOTO GRID */}
-      <section className="py-16 bg-[#DCD7CD] ">
-        <div className="max-w-6xl mx-auto px-10 md:px-8 ">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
+      <section className="py-16 bg-[#DCD7CD]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {filtered.map((photo, i) => (
               <button
                 key={i}
                 onClick={() => setLightbox(photo.src)}
-                className="group relative overflow-hidden aspect-[4/3] focus:outline-none rounded-[16px]"
+                className="relative overflow-hidden aspect-[4/3] rounded-xl"
               >
                 <img
                   src={photo.src}
                   alt={photo.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  className="w-full h-full object-cover hover:scale-105 transition"
                 />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-end">
-                  <div className="p-5 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <p className="text-sm text-[#D9B59D] mb-1">{photo.cat}</p>
-                    <p className="text-xl text-white">{photo.title}</p>
-                  </div>
-                </div>
               </button>
             ))}
           </div>
-
-          {filtered.length === 0 && (
-            <div className="text-center py-24">
-              <p className="text-lg text-[#354E41]/60">
-                No photos in this category yet.
-              </p>
-            </div>
-          )}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#354E41] text-center">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl text-white mb-4">
-            Experience It In Person
-          </h2>
-          <p className="text-lg text-[#DCD7CD] mb-10">
-            These images only capture a glimpse of what awaits you at Vihara.
-            Book your stay and create your own beautiful memories.
-          </p>
-          <Link
-            href="/booking"
-            className="inline-block bg-[#D9B59D] text-[#354E41] px-10 py-4 rounded-[16px] text-lg font-medium no-underline hover:opacity-90 transition-opacity"
-          >
-            Book Now
-          </Link>
-        </div>
+      <section className="py-20 bg-[#354E41] text-center text-white">
+        <h2 className="text-3xl mb-4">Experience It In Person</h2>
+        <Link
+          href="/booking"
+          className="bg-[#D9B59D] text-[#354E41] px-8 py-3 rounded-lg"
+        >
+          Book Now
+        </Link>
       </section>
 
       {/* LIGHTBOX */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
           onClick={() => setLightbox(null)}
         >
-          <button
-            onClick={() => setLightbox(null)}
-            className="absolute top-6 right-8 text-white text-4xl leading-none hover:text-[#D9B59D] transition-colors"
-          >
-            ×
-          </button>
           <img
             src={lightbox}
-            alt="Gallery"
-            className="max-w-full max-h-[90vh] object-contain"
+            className="max-h-[90vh] max-w-full"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
