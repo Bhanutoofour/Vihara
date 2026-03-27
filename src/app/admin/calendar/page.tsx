@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Booking, BookingStatus } from "@/lib/supabase";
 
+const ADMIN_TOKEN = process.env.NEXT_PUBLIC_ADMIN_TOKEN!;
+
 const SOURCES = [
   {
     id: "vihara",
@@ -30,6 +32,30 @@ const STATUS_COLORS: Record<
   cancelled: { bg: "#f5f5f5", text: "#888", label: "Cancelled" },
 };
 
+const PLANS = [
+  {
+    label: "Up to 10 Guests",
+    type: "staycation",
+    weekday: 30000,
+    weekend: 35000,
+  },
+  {
+    label: "Up to 15 Guests",
+    type: "staycation",
+    weekday: 40000,
+    weekend: 48000,
+  },
+  {
+    label: "Up to 20 Guests",
+    type: "staycation",
+    weekday: 50000,
+    weekend: 60000,
+  },
+  { label: "Up to 50 Guests", type: "event", weekday: 60000, weekend: 75000 },
+  { label: "Up to 100 Guests", type: "event", weekday: 80000, weekend: 95000 },
+  { label: "4 Hours", type: "movie", weekday: 15000, weekend: 25000 },
+];
+
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
   "January",
@@ -50,19 +76,87 @@ interface CalBooking extends Booking {
   source: string;
 }
 
+function generateRef() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let ref = "VH-";
+  for (let i = 0; i < 8; i++)
+    ref += chars[Math.floor(Math.random() * chars.length)];
+  return ref;
+}
+
 export default function CalendarPage() {
   const now = new Date();
+  const [authed, setAuthed] = useState(false);
+  const [loginPass, setLoginPass] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [currentYear, setCurrentYear] = useState(now.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(now.getMonth());
   const [bookings, setBookings] = useState<CalBooking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<"cal" | "list">("cal");
   const [activeSources, setActiveSources] = useState(new Set(["vihara"]));
   const [selected, setSelected] = useState<CalBooking | null>(null);
+  const [showManual, setShowManual] = useState(false);
+
+  const [mForm, setMForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    requests: "",
+    check_in: "",
+    check_out: "",
+    plan_label: PLANS[0].label,
+    booking_type: "staycation" as "staycation" | "event" | "movie",
+    day_type: "weekday" as "weekday" | "weekend",
+    guests: 10,
+    status: "confirmed" as BookingStatus,
+    payment_method: "manual" as "manual" | "razorpay",
+    total_amount: 30000,
+  });
+  const [mSaving, setMSaving] = useState(false);
+  const [mError, setMError] = useState("");
+  const [mSuccess, setMSuccess] = useState("");
 
   useEffect(() => {
-    fetchBookings();
-  }, [currentYear, currentMonth]);
+    const saved = sessionStorage.getItem("cal_authed");
+    if (saved === "1") setAuthed(true);
+  }, []);
+
+  useEffect(() => {
+    if (authed) fetchBookings();
+  }, [authed, currentYear, currentMonth]);
+
+  useEffect(() => {
+    const plan = PLANS.find((p) => p.label === mForm.plan_label);
+    if (plan) {
+      const nights =
+        mForm.check_in && mForm.check_out
+          ? Math.max(
+              1,
+              Math.round(
+                (new Date(mForm.check_out).getTime() -
+                  new Date(mForm.check_in).getTime()) /
+                  86400000,
+              ),
+            )
+          : 1;
+      const base = mForm.day_type === "weekday" ? plan.weekday : plan.weekend;
+      setMForm((f) => ({
+        ...f,
+        total_amount: base * (plan.type === "movie" ? 1 : nights),
+        booking_type: plan.type as any,
+      }));
+    }
+  }, [mForm.plan_label, mForm.day_type, mForm.check_in, mForm.check_out]);
+
+  function handleLogin() {
+    if (loginPass === ADMIN_TOKEN) {
+      sessionStorage.setItem("cal_authed", "1");
+      setAuthed(true);
+    } else {
+      setLoginError("Incorrect password.");
+    }
+  }
 
   async function fetchBookings() {
     setLoading(true);
@@ -70,21 +164,64 @@ export default function CalendarPage() {
       const res = await fetch(
         `/api/admin/bookings?year=${currentYear}&month=${currentMonth}`,
         {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ADMIN_TOKEN}`,
-          },
+          headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
         },
       );
       const data = await res.json();
-      if (data.bookings) {
+      if (data.bookings)
         setBookings(
           data.bookings.map((b: Booking) => ({ ...b, source: "vihara" })),
         );
-      }
     } catch (e) {
       console.error(e);
     }
     setLoading(false);
+  }
+
+  async function handleManualBooking() {
+    setMError("");
+    if (!mForm.name || !mForm.email || !mForm.phone || !mForm.check_in) {
+      setMError("Name, email, phone and check-in date are required.");
+      return;
+    }
+    setMSaving(true);
+    try {
+      const booking_ref = generateRef();
+      const res = await fetch("/api/admin/manual-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ADMIN_TOKEN}`,
+        },
+        body: JSON.stringify({ ...mForm, booking_ref }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+      setMSuccess(`Booking created! Ref: ${booking_ref}`);
+      fetchBookings();
+      setTimeout(() => {
+        setShowManual(false);
+        setMSuccess("");
+        setMForm({
+          name: "",
+          email: "",
+          phone: "",
+          requests: "",
+          check_in: "",
+          check_out: "",
+          plan_label: PLANS[0].label,
+          booking_type: "staycation",
+          day_type: "weekday",
+          guests: 10,
+          status: "confirmed",
+          payment_method: "manual",
+          total_amount: 30000,
+        });
+      }, 2000);
+    } catch (e: any) {
+      setMError(e.message || "Failed to create booking.");
+    }
+    setMSaving(false);
   }
 
   function getBookingsForDay(date: Date): CalBooking[] {
@@ -111,12 +248,47 @@ export default function CalendarPage() {
       setCurrentYear((y) => y - 1);
     } else setCurrentMonth((m) => m - 1);
   }
-
   function nextMonth() {
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear((y) => y + 1);
     } else setCurrentMonth((m) => m + 1);
+  }
+
+  // ── LOGIN ──
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-[#F5F1EA] flex items-center justify-center px-4">
+        <div className="bg-white border border-[#eee] p-8 w-full max-w-sm rounded-[16px]">
+          <p className="text-[#D9B59D] text-xs uppercase tracking-widest mb-1">
+            Vihara Admin
+          </p>
+          <h1 className="text-2xl font-normal text-[#1a1a1a] mb-6">
+            Booking Calendar
+          </h1>
+          <label className="text-xs text-[#555] mb-1 block">
+            Admin Password
+          </label>
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={loginPass}
+            onChange={(e) => setLoginPass(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            className="w-full border border-[#ddd] px-3 py-2.5 text-sm outline-none focus:border-[#2D4A3E] transition-colors mb-3 rounded-lg"
+          />
+          {loginError && (
+            <p className="text-xs text-red-500 mb-3">{loginError}</p>
+          )}
+          <button
+            onClick={handleLogin}
+            className="w-full bg-[#2D4A3E] text-white py-2.5 text-sm rounded-lg hover:bg-[#1C3028] transition-colors"
+          >
+            Sign In →
+          </button>
+        </div>
+      </div>
+    );
   }
 
   const visibleBookings = bookings.filter((b) => activeSources.has(b.source));
@@ -125,7 +297,6 @@ export default function CalendarPage() {
     (b) => b.status === "pending_payment" || b.status === "payment_uploaded",
   );
   const revenue = confirmed.reduce((s, b) => s + b.total_amount, 0);
-
   const occupiedDays = new Set<number>();
   visibleBookings.forEach((b) => {
     const d = new Date(b.check_in + "T00:00:00");
@@ -137,7 +308,6 @@ export default function CalendarPage() {
       d.setDate(d.getDate() + 1);
     }
   });
-
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
   const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
@@ -146,19 +316,36 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-[#F5F1EA]">
       {/* Header */}
-      <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between">
+      <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between flex-wrap gap-3">
         <div>
           <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
             Vihara Admin
           </p>
           <p className="text-white text-lg font-medium">Booking Calendar</p>
         </div>
-        <a
-          href="/admin"
-          className="text-white/60 text-xs hover:text-white transition-colors"
-        >
-          ← Dashboard
-        </a>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => setShowManual(true)}
+            className="bg-[#D9B59D] text-[#1a1a1a] text-xs font-medium px-4 py-2 rounded-lg hover:bg-[#c9a08d] transition-colors"
+          >
+            + Manual Booking
+          </button>
+          <a
+            href="/admin"
+            className="text-white/60 text-xs hover:text-white transition-colors"
+          >
+            ← Dashboard
+          </a>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem("cal_authed");
+              setAuthed(false);
+            }}
+            className="text-white/40 text-xs hover:text-white transition-colors"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -260,7 +447,9 @@ export default function CalendarPage() {
                 style={{ background: s.color }}
               ></span>
               {s.label}
-              {s.id !== "vihara" && <span className="opacity-50">(soon)</span>}
+              {s.id !== "vihara" && (
+                <span className="opacity-50 ml-1">(soon)</span>
+              )}
             </button>
           ))}
         </div>
@@ -304,7 +493,6 @@ export default function CalendarPage() {
                       const dayBookings = isCurrentMonth
                         ? getBookingsForDay(date)
                         : [];
-
                       return (
                         <td
                           key={colIdx}
@@ -497,6 +685,295 @@ export default function CalendarPage() {
           ))}
         </div>
       </div>
+
+      {/* ── MANUAL BOOKING MODAL ── */}
+      {showManual && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowManual(false);
+          }}
+        >
+          <div className="bg-white rounded-[16px] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="bg-[#2D4A3E] px-6 py-4 rounded-t-[16px] flex items-center justify-between sticky top-0">
+              <div>
+                <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
+                  Admin
+                </p>
+                <p className="text-white font-medium">Create Manual Booking</p>
+              </div>
+              <button
+                onClick={() => setShowManual(false)}
+                className="text-white/60 hover:text-white text-xl leading-none"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Guest Details */}
+              <div>
+                <p className="text-xs text-[#888] uppercase tracking-widest mb-3">
+                  Guest Details
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    {
+                      label: "Full Name *",
+                      key: "name",
+                      type: "text",
+                      placeholder: "Guest full name",
+                    },
+                    {
+                      label: "Phone *",
+                      key: "phone",
+                      type: "tel",
+                      placeholder: "+91 98765 43210",
+                    },
+                    {
+                      label: "Email *",
+                      key: "email",
+                      type: "email",
+                      placeholder: "guest@email.com",
+                    },
+                  ].map((f) => (
+                    <div key={f.key}>
+                      <label className="text-xs text-[#555] mb-1 block">
+                        {f.label}
+                      </label>
+                      <input
+                        type={f.type}
+                        placeholder={f.placeholder}
+                        value={(mForm as any)[f.key]}
+                        onChange={(e) =>
+                          setMForm((m) => ({ ...m, [f.key]: e.target.value }))
+                        }
+                        className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg transition-colors"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Special Requests
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="Any notes..."
+                      value={mForm.requests}
+                      onChange={(e) =>
+                        setMForm((m) => ({ ...m, requests: e.target.value }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg transition-colors resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Details */}
+              <div>
+                <p className="text-xs text-[#888] uppercase tracking-widest mb-3">
+                  Booking Details
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Check In *
+                    </label>
+                    <input
+                      type="date"
+                      value={mForm.check_in}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          check_in: e.target.value,
+                          check_out:
+                            m.check_out && m.check_out <= e.target.value
+                              ? ""
+                              : m.check_out,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Check Out
+                    </label>
+                    <input
+                      type="date"
+                      value={mForm.check_out}
+                      min={
+                        mForm.check_in
+                          ? new Date(
+                              new Date(mForm.check_in).getTime() + 86400000,
+                            )
+                              .toISOString()
+                              .split("T")[0]
+                          : ""
+                      }
+                      disabled={!mForm.check_in}
+                      onChange={(e) =>
+                        setMForm((m) => ({ ...m, check_out: e.target.value }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg transition-colors disabled:opacity-40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Package
+                    </label>
+                    <select
+                      value={mForm.plan_label}
+                      onChange={(e) =>
+                        setMForm((m) => ({ ...m, plan_label: e.target.value }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                    >
+                      {PLANS.map((p) => (
+                        <option key={p.label} value={p.label}>
+                          {p.label} — {p.type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Day Type
+                    </label>
+                    <select
+                      value={mForm.day_type}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          day_type: e.target.value as any,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                    >
+                      <option value="weekday">Weekday</option>
+                      <option value="weekend">Weekend</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Number of Guests
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={200}
+                      value={mForm.guests}
+                      onChange={(e) =>
+                        setMForm((m) => ({ ...m, guests: +e.target.value }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Total Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={mForm.total_amount}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          total_amount: +e.target.value,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Booking Status
+                    </label>
+                    <select
+                      value={mForm.status}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          status: e.target.value as BookingStatus,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="pending_payment">Pending Payment</option>
+                      <option value="payment_uploaded">Payment Uploaded</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Payment Method
+                    </label>
+                    <select
+                      value={mForm.payment_method}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          payment_method: e.target.value as any,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                    >
+                      <option value="manual">
+                        Manual / Cash / Bank Transfer
+                      </option>
+                      <option value="razorpay">Razorpay</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="bg-[#2D4A3E] rounded-lg px-4 py-3">
+                <div className="flex justify-between text-xs text-white/60 mb-1">
+                  <span>
+                    {mForm.plan_label} · {mForm.day_type}
+                  </span>
+                  <span>
+                    {mForm.check_in}
+                    {mForm.check_out ? ` → ${mForm.check_out}` : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between text-white font-medium">
+                  <span>Total Amount</span>
+                  <span>₹{mForm.total_amount.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
+
+              {mError && (
+                <p className="text-xs text-red-500 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+                  {mError}
+                </p>
+              )}
+              {mSuccess && (
+                <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+                  ✓ {mSuccess}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowManual(false)}
+                  className="flex-1 border border-[#ddd] text-[#555] py-2.5 text-sm rounded-lg hover:bg-[#f5f5f5] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManualBooking}
+                  disabled={mSaving}
+                  className="flex-1 bg-[#2D4A3E] text-white py-2.5 text-sm rounded-lg hover:bg-[#1C3028] transition-colors disabled:opacity-40"
+                >
+                  {mSaving ? "Creating..." : "Create Booking →"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
