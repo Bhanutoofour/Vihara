@@ -100,8 +100,12 @@ export async function POST(req: NextRequest) {
       requests,
     };
     Promise.all([
-      sendGuestBookingReceived(emailPayload).catch(console.error),
-      sendAdminNewBookingAlert(emailPayload).catch(console.error),
+      sendGuestBookingReceived(emailPayload).catch((e) =>
+        console.error("GUEST EMAIL ERROR:", e),
+      ),
+      sendAdminNewBookingAlert(emailPayload).catch((e) =>
+        console.error("ADMIN EMAIL ERROR:", e),
+      ),
     ]);
 
     return NextResponse.json({
