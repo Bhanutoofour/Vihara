@@ -90,11 +90,22 @@ export default function BookingPage() {
 
   const allPlans = [...staycationPlans, ...eventPlans, ...moviePlan];
   const plan = allPlans.find((p) => p.id === selectedPlan);
-  const total = plan
+  const nights =
+    checkIn && checkOut
+      ? Math.max(
+          1,
+          Math.round(
+            (new Date(checkOut).getTime() - new Date(checkIn).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        )
+      : 1;
+  const basePrice = plan
     ? dayType === "weekday"
       ? plan.weekday
       : plan.weekend
     : 0;
+  const total = basePrice * (bookingType === "movie" ? 1 : nights);
   const currentPlans =
     bookingType === "staycation"
       ? staycationPlans
@@ -584,6 +595,14 @@ export default function BookingPage() {
                   <div className="flex justify-between">
                     <span>Check Out</span>
                     <span>{checkOut}</span>
+                  </div>
+                )}
+                {bookingType !== "movie" && nights > 1 && (
+                  <div className="flex justify-between text-[#D9B59D]">
+                    <span>
+                      {nights} nights × ₹{basePrice.toLocaleString()}
+                    </span>
+                    <span>₹{total.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
