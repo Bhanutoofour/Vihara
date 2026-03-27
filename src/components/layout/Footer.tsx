@@ -69,7 +69,6 @@ export default function Footer() {
                   viharahospitality@gmail.com
                 </a>
               </p>
-
               {/* Social */}
               <div className="flex gap-4 pt-2">
                 <a
@@ -97,9 +96,20 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-[rgba(255,255,255,0.1)] pt-8 text-center">
+        <div className="border-t border-[rgba(255,255,255,0.1)] pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="font-['Jost'] text-xs text-[#DCD7CD] opacity-40">
             © 2026 Vihara - The Courtyard. All rights reserved.
+          </p>
+          <p className="font-['Jost'] text-xs text-[#DCD7CD] opacity-40">
+            Crafted with ❤️ by{" "}
+            <a
+              href="https://www.digipaddles.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:opacity-100 hover:text-[#D9B59D] transition-all duration-200 underline underline-offset-2"
+            >
+              DigiPaddles
+            </a>
           </p>
         </div>
       </div>
