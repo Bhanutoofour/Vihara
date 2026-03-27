@@ -76,7 +76,7 @@ export default function AdminDashboard() {
       .channel("admin-bookings")
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => fetchBookings())
       .subscribe();
-    return () => { supabaseAdmin.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [authed]);
 
   // Auto-calc total for manual booking
