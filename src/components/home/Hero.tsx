@@ -61,7 +61,7 @@ export default function Hero() {
             download
             className="w-full sm:w-auto px-8 py-3 border border-white text-white text-sm tracking-widest uppercase hover:bg-white hover:text-[#354E41] transition-all duration-300 rounded-[16px] flex items-center gap-2 justify-center"
           >
-            Download Brochure
+            Download Pricing
             <svg
               width="14"
               height="14"

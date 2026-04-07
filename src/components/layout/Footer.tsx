@@ -8,6 +8,7 @@ const quickLinks = [
   { name: "Gallery", href: "/gallery" },
   { name: "Booking", href: "/booking" },
   { name: "Contact", href: "/contact" },
+  { name: "Terms & Conditions", href: "/terms" },
 ];
 
 export default function Footer() {
