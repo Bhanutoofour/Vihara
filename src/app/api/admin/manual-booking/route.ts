@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
       check_out,
       guests,
       total_amount,
+      paid_amount,
+      balance_amount,
       name,
       email,
       phone,
@@ -60,6 +62,10 @@ export async function POST(req: NextRequest) {
         check_out: check_out || null,
         guests,
         total_amount,
+        paid_amount: paid_amount ?? 0,
+        balance_amount:
+          balance_amount ??
+          Math.max(0, Number(total_amount || 0) - Number(paid_amount || 0)),
         name,
         email,
         phone,

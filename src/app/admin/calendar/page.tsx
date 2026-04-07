@@ -64,6 +64,8 @@ export default function CalendarPage() {
     status: "confirmed" as BookingStatus,
     payment_method: "manual" as "manual" | "razorpay",
     total_amount: 30000,
+    paid_amount: 0,
+    balance_amount: 30000,
   });
   const [mSaving, setMSaving] = useState(false);
   const [mError, setMError] = useState("");
@@ -85,7 +87,19 @@ export default function CalendarPage() {
         ? Math.max(1, Math.round((new Date(mForm.check_out).getTime() - new Date(mForm.check_in).getTime()) / 86400000))
         : 1;
       const base = mForm.day_type === "weekday" ? plan.weekday : plan.weekend;
+<<<<<<< HEAD
       setMForm(f => ({ ...f, total_amount: base * (plan.type === "movie" ? 1 : nights), booking_type: plan.type as any }));
+=======
+      setMForm((f) => ({
+        ...f,
+        total_amount: base * (plan.type === "movie" ? 1 : nights),
+        balance_amount: Math.max(
+          0,
+          base * (plan.type === "movie" ? 1 : nights) - f.paid_amount,
+        ),
+        booking_type: plan.type as any,
+      }));
+>>>>>>> 37d152a (changed requested)
     }
   }, [mForm.plan_label, mForm.day_type, mForm.check_in, mForm.check_out]);
 
@@ -131,7 +145,27 @@ export default function CalendarPage() {
       setTimeout(() => {
         setShowManual(false);
         setMSuccess("");
+<<<<<<< HEAD
         setMForm({ name: "", email: "", phone: "", requests: "", check_in: "", check_out: "", plan_label: PLANS[0].label, booking_type: "staycation", day_type: "weekday", guests: 10, status: "confirmed", payment_method: "manual", total_amount: 30000 });
+=======
+        setMForm({
+          name: "",
+          email: "",
+          phone: "",
+          requests: "",
+          check_in: "",
+          check_out: "",
+          plan_label: PLANS[0].label,
+          booking_type: "staycation",
+          day_type: "weekday",
+          guests: 10,
+          status: "confirmed",
+          payment_method: "manual",
+          total_amount: 30000,
+          paid_amount: 0,
+          balance_amount: 30000,
+        });
+>>>>>>> 37d152a (changed requested)
       }, 2000);
     } catch (e: any) {
       setMError(e.message || "Failed to create booking.");
@@ -375,6 +409,24 @@ export default function CalendarPage() {
                 </div>
               ))}
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div className="bg-[#f9f7f4] border border-[#eee] px-4 py-3 rounded-lg">
+                <p className="text-xs text-[#888] mb-1">Paid Amount</p>
+                <p className="text-sm font-medium text-[#1a1a1a]">
+                  ₹{(selected.paid_amount ?? 0).toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div className="bg-[#f9f7f4] border border-[#eee] px-4 py-3 rounded-lg">
+                <p className="text-xs text-[#888] mb-1">Balance Amount</p>
+                <p className="text-sm font-medium text-[#1a1a1a]">
+                  ₹
+                  {(
+                    selected.balance_amount ??
+                    Math.max(0, selected.total_amount - (selected.paid_amount ?? 0))
+                  ).toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
             {selected.requests && (
               <div className="bg-[#f9f7f4] border border-[#eee] px-4 py-3 rounded-lg mb-4">
                 <p className="text-xs text-[#888] mb-1">Special Requests</p>
@@ -442,6 +494,12 @@ export default function CalendarPage() {
                       className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg transition-colors resize-none" />
                   </div>
                 </div>
+                <div className="mt-2 flex justify-between text-xs text-white/70">
+                  <span>Paid: ₹{mForm.paid_amount.toLocaleString("en-IN")}</span>
+                  <span>
+                    Balance: ₹{mForm.balance_amount.toLocaleString("en-IN")}
+                  </span>
+                </div>
               </div>
 
               {/* Booking Details */}
@@ -486,6 +544,7 @@ export default function CalendarPage() {
                       className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg" />
                   </div>
                   <div>
+<<<<<<< HEAD
                     <label className="text-xs text-[#555] mb-1 block">Total Amount (₹)</label>
                     <input type="number" value={mForm.total_amount}
                       onChange={e => setMForm(m => ({ ...m, total_amount: +e.target.value }))}
@@ -496,6 +555,72 @@ export default function CalendarPage() {
                     <select value={mForm.status}
                       onChange={e => setMForm(m => ({ ...m, status: e.target.value as BookingStatus }))}
                       className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white">
+=======
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Total Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={mForm.total_amount}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          total_amount: +e.target.value,
+                          balance_amount: Math.max(
+                            0,
+                            +e.target.value - m.paid_amount,
+                          ),
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Paid Amount (â‚¹)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={mForm.total_amount}
+                      value={mForm.paid_amount}
+                      onChange={(e) => {
+                        const paid = Math.max(0, +e.target.value || 0);
+                        setMForm((m) => ({
+                          ...m,
+                          paid_amount: paid,
+                          balance_amount: Math.max(0, m.total_amount - paid),
+                        }));
+                      }}
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Balance Amount (â‚¹)
+                    </label>
+                    <input
+                      type="number"
+                      value={mForm.balance_amount}
+                      readOnly
+                      className="w-full border border-[#ddd] bg-[#f9f7f4] px-3 py-2 text-sm outline-none rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#555] mb-1 block">
+                      Booking Status
+                    </label>
+                    <select
+                      value={mForm.status}
+                      onChange={(e) =>
+                        setMForm((m) => ({
+                          ...m,
+                          status: e.target.value as BookingStatus,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                    >
+>>>>>>> 37d152a (changed requested)
                       <option value="confirmed">Confirmed</option>
                       <option value="pending_payment">Pending Payment</option>
                       <option value="payment_uploaded">Payment Uploaded</option>
@@ -525,8 +650,28 @@ export default function CalendarPage() {
                 </div>
               </div>
 
+<<<<<<< HEAD
               {mError && <p className="text-xs text-red-500 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">{mError}</p>}
               {mSuccess && <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">✓ {mSuccess}</p>}
+=======
+              <div className="mt-2 flex justify-between text-xs text-white/70">
+                <span>Paid: Rs. {mForm.paid_amount.toLocaleString("en-IN")}</span>
+                <span>
+                  Balance: Rs. {mForm.balance_amount.toLocaleString("en-IN")}
+                </span>
+              </div>
+
+              {mError && (
+                <p className="text-xs text-red-500 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+                  {mError}
+                </p>
+              )}
+              {mSuccess && (
+                <p className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-lg">
+                  ✓ {mSuccess}
+                </p>
+              )}
+>>>>>>> 37d152a (changed requested)
 
               <div className="flex gap-3">
                 <button onClick={() => setShowManual(false)}

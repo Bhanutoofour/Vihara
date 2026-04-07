@@ -30,6 +30,8 @@ export interface Booking {
   check_out: string | null;
   guests: number;
   total_amount: number;
+  paid_amount?: number | null;
+  balance_amount?: number | null;
   name: string;
   email: string;
   phone: string;

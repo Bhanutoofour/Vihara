@@ -9,6 +9,7 @@ const quickLinks = [
   { name: "Booking", href: "/booking" },
   { name: "Contact", href: "/contact" },
   { name: "Terms & Conditions", href: "/terms" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
 ];
 
 export default function Footer() {
