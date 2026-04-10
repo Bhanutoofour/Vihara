@@ -132,6 +132,24 @@ export default function AdminCalendarPage() {
     manualForm.check_out,
   ]);
 
+  useEffect(() => {
+    setManualForm((current) => {
+      const total = Number(current.total_amount) || 0;
+      const paid = Math.max(0, Math.min(total, Number(current.paid_amount) || 0));
+      const nextBalance = Math.max(0, total - paid);
+
+      if (paid === current.paid_amount && nextBalance === current.balance_amount) {
+        return current;
+      }
+
+      return {
+        ...current,
+        paid_amount: paid,
+        balance_amount: nextBalance,
+      };
+    });
+  }, [manualForm.total_amount, manualForm.paid_amount]);
+
   async function fetchBookings() {
     setLoading(true);
     try {
@@ -535,14 +553,18 @@ export default function AdminCalendarPage() {
                             next.check_out = "";
                           }
                           if (field.key === "paid_amount") {
-                            next.balance_amount = Math.max(0, next.total_amount - Number(value || 0));
+                            next.paid_amount = Math.max(
+                              0,
+                              Math.min(next.total_amount, Number(value || 0)),
+                            );
                           }
                           if (field.key === "total_amount") {
-                            next.balance_amount = Math.max(0, Number(value || 0) - next.paid_amount);
+                            next.total_amount = Math.max(0, Number(value || 0));
                           }
                           return next;
                         })
                       }
+                      readOnly={field.key === "balance_amount"}
                       min={
                         field.key === "check_in"
                           ? new Date().toISOString().split("T")[0]
@@ -560,7 +582,9 @@ export default function AdminCalendarPage() {
                         (field.key === "phone" && manualError && !manualForm.phone.trim()) ||
                         (field.key === "check_in" && manualError && !manualForm.check_in)
                           ? "border-red-300 bg-red-50"
-                          : "border-[#ddd]"
+                          : field.key === "balance_amount"
+                            ? "border-[#ddd] bg-[#f7f4ef]"
+                            : "border-[#ddd]"
                       }`}
                     />
                   </div>
