@@ -157,8 +157,20 @@ export default function AdminCalendarPage() {
 
   async function createManualBooking() {
     setManualError("");
-    if (!manualForm.name || !manualForm.email || !manualForm.phone || !manualForm.check_in) {
-      setManualError("Name, email, phone, and check-in are required.");
+    if (!manualForm.name.trim()) {
+      setManualError("Guest name is required.");
+      return;
+    }
+    if (!manualForm.email.trim()) {
+      setManualError("Email is required.");
+      return;
+    }
+    if (!manualForm.phone.trim()) {
+      setManualError("Phone number is required.");
+      return;
+    }
+    if (!manualForm.check_in) {
+      setManualError("Check-in date is required.");
       return;
     }
 
@@ -525,7 +537,14 @@ export default function AdminCalendarPage() {
                           return next;
                         })
                       }
-                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                      className={`w-full border px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg ${
+                        (field.key === "name" && manualError && !manualForm.name.trim()) ||
+                        (field.key === "email" && manualError && !manualForm.email.trim()) ||
+                        (field.key === "phone" && manualError && !manualForm.phone.trim()) ||
+                        (field.key === "check_in" && manualError && !manualForm.check_in)
+                          ? "border-red-300 bg-red-50"
+                          : "border-[#ddd]"
+                      }`}
                     />
                   </div>
                 ))}
