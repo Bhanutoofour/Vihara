@@ -5,6 +5,13 @@ import {
   sendAdminNewBookingAlert,
 } from "@/lib/email";
 
+function isMissingColumnError(message?: string) {
+  return Boolean(
+    message &&
+      (message.includes("'paid_amount'") || message.includes("'balance_amount'")),
+  );
+}
+
 export async function POST(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
   if (token !== process.env.ADMIN_SECRET_TOKEN) {
@@ -50,28 +57,44 @@ export async function POST(req: NextRequest) {
     }
 
     // Save booking
-    const { data, error } = await supabaseAdmin
+    const baseInsert = {
+      booking_ref,
+      booking_type,
+      plan_label,
+      day_type,
+      check_in,
+      check_out: check_out || null,
+      guests,
+      total_amount,
+      name,
+      email,
+      phone,
+      requests: requests || null,
+      payment_method,
+      status,
+      user_id,
+    };
+
+    let query = supabaseAdmin
       .from("bookings")
       .insert({
-        booking_ref,
-        booking_type,
-        plan_label,
-        day_type,
-        check_in,
-        check_out: check_out || null,
-        guests,
-        total_amount,
+        ...baseInsert,
         paid_amount: paid_amount ?? 0,
-        name,
-        email,
-        phone,
-        requests: requests || null,
-        payment_method,
-        status,
-        user_id,
       })
       .select()
       .single();
+
+    let { data, error } = await query;
+
+    if (error && isMissingColumnError(error.message)) {
+      const fallback = await supabaseAdmin
+        .from("bookings")
+        .insert(baseInsert)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) throw error;
 

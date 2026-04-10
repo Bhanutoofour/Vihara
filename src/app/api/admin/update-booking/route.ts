@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendGuestBookingConfirmed, sendGuestBookingRejected } from "@/lib/email";
 
+function isMissingColumnError(message?: string) {
+  return Boolean(
+    message &&
+      (message.includes("'paid_amount'") || message.includes("'balance_amount'")),
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = req.headers.get("authorization");
@@ -13,25 +20,47 @@ export async function POST(req: NextRequest) {
 
     // Build update object — only include fields that were sent
     const updateData: any = {};
+    const fallbackUpdateData: any = {};
     if (status !== undefined) updateData.status = status;
+    if (status !== undefined) fallbackUpdateData.status = status;
     if (admin_notes !== undefined) updateData.admin_notes = admin_notes;
+    if (admin_notes !== undefined) fallbackUpdateData.admin_notes = admin_notes;
     if (name !== undefined) updateData.name = name;
+    if (name !== undefined) fallbackUpdateData.name = name;
     if (email !== undefined) updateData.email = email;
+    if (email !== undefined) fallbackUpdateData.email = email;
     if (phone !== undefined) updateData.phone = phone;
+    if (phone !== undefined) fallbackUpdateData.phone = phone;
     if (check_in !== undefined) updateData.check_in = check_in;
+    if (check_in !== undefined) fallbackUpdateData.check_in = check_in;
     if (check_out !== undefined) updateData.check_out = check_out || null;
+    if (check_out !== undefined) fallbackUpdateData.check_out = check_out || null;
     if (guests !== undefined) updateData.guests = guests;
+    if (guests !== undefined) fallbackUpdateData.guests = guests;
     if (total_amount !== undefined) updateData.total_amount = total_amount;
+    if (total_amount !== undefined) fallbackUpdateData.total_amount = total_amount;
     if (paid_amount !== undefined) updateData.paid_amount = Number(paid_amount) || 0;
     if (requests !== undefined) updateData.requests = requests;
+    if (requests !== undefined) fallbackUpdateData.requests = requests;
 
     // Update DB
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from("bookings")
       .update(updateData)
       .eq("id", booking_id)
       .select()
       .single();
+
+    if (error && isMissingColumnError(error.message)) {
+      const fallback = await supabaseAdmin
+        .from("bookings")
+        .update(fallbackUpdateData)
+        .eq("id", booking_id)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) throw error;
 
