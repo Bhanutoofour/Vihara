@@ -9,6 +9,10 @@ function isMissingColumnError(message?: string) {
   );
 }
 
+function isStatusConstraintError(message?: string) {
+  return Boolean(message && message.includes("bookings_status_check"));
+}
+
 export async function POST(req: NextRequest) {
   try {
     const auth = req.headers.get("authorization");
@@ -55,6 +59,23 @@ export async function POST(req: NextRequest) {
       const fallback = await supabaseAdmin
         .from("bookings")
         .update(fallbackUpdateData)
+        .eq("id", booking_id)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
+
+    if (error && isStatusConstraintError(error.message) && status === "half_payment_done") {
+      const fallback = await supabaseAdmin
+        .from("bookings")
+        .update({
+          ...fallbackUpdateData,
+          status: "pending_payment",
+          admin_notes: admin_notes
+            ? `${admin_notes}\nHalf payment received.`
+            : "Half payment received.",
+        })
         .eq("id", booking_id)
         .select()
         .single();

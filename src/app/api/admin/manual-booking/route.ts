@@ -21,6 +21,19 @@ function isStatusConstraintError(message?: string) {
   return Boolean(message && message.includes("bookings_status_check"));
 }
 
+function withHalfPaymentFallback<T extends { status?: string; requests?: string | null }>(
+  payload: T,
+) {
+  if (payload.status !== "half_payment_done") return payload;
+  return {
+    ...payload,
+    status: "pending_payment",
+    requests: payload.requests
+      ? `${payload.requests}\n[Admin note] Half payment received.`
+      : "[Admin note] Half payment received.",
+  };
+}
+
 export async function POST(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
   if (token !== process.env.ADMIN_SECRET_TOKEN) {
@@ -140,13 +153,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (error && isStatusConstraintError(error.message) && status === "half_payment_done") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Database schema update required: add 'half_payment_done' to the bookings status constraint before using this status.",
-        },
-        { status: 400 },
-      );
+      const fallback = await supabaseAdmin
+        .from("bookings")
+        .insert(withHalfPaymentFallback(baseInsert))
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
     }
 
     if (error) throw error;
