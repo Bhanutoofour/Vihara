@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#F5F1EA] flex items-center justify-center text-sm text-[#888]">
+      <div className="min-h-screen bg-[#F5F1EA] pt-[92px] flex items-center justify-center text-sm text-[#888]">
         Loading admin panel...
       </div>
     );
@@ -58,7 +58,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-[#F5F1EA] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F5F1EA] pt-[92px] flex items-center justify-center px-4">
         <div className="bg-white border border-[#eee] p-8 w-full max-w-sm rounded-[20px] shadow-[0_20px_60px_rgba(45,74,62,0.08)]">
           <div className="w-12 h-12 bg-[#2D4A3E] rounded-[14px] flex items-center justify-center mb-4">
             <span className="text-white text-xl">V</span>
@@ -96,8 +96,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F1EA] text-[#1a1a1a]">
-      <div className="flex min-h-screen flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#F5F1EA] text-[#1a1a1a] pt-[92px]">
+      <div className="flex min-h-[calc(100vh-92px)] flex-col lg:flex-row">
         <aside className="w-full lg:w-[280px] bg-[#24372F] text-white border-r border-white/10">
           <div className="px-6 py-6 border-b border-white/10">
             <p className="text-[#D9B59D] text-xs uppercase tracking-[0.3em] mb-2">
