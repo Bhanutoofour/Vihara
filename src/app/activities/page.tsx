@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { getPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Activities | Vihara - The Courtyard",
-  description: "Discover endless ways to relax and rejuvenate at Vihara.",
-};
+export const metadata: Metadata = getPageMetadata({
+  title: "Activities at Vihara - The Courtyard",
+  description:
+    "Explore yoga, meditation, swimming, outdoor games, bird watching, celebrations, and other curated experiences available at Vihara near Hyderabad.",
+  path: "/activities",
+});
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1545389336-cf090694435e?w=1600&q=80";

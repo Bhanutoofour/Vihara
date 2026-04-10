@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Amenities | Vihara - The Courtyard",
-  description: "Everything thoughtfully curated for your stay at Vihara.",
-};
+export const metadata: Metadata = getPageMetadata({
+  title: "Amenities at Vihara - The Courtyard",
+  description:
+    "Discover the rooms, pool, courtyard, dining areas, power backup, parking, and stay essentials that make Vihara comfortable for events and getaways.",
+  path: "/amenities",
+});
 
 const HERO_IMG = "ma.webp";
 const POOL_IMG = "bd.webp";

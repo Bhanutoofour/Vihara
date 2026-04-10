@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import { getPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "About Us | Vihara - The Courtyard",
-  description: "Learn about Vihara - The Courtyard.",
+  ...getPageMetadata({
+    title: "About Vihara - The Courtyard",
+    description:
+      "Learn the story behind Vihara - The Courtyard, a peaceful retreat venue near Hyderabad designed for intimate stays, events, and mindful gatherings.",
+    path: "/about",
+  }),
 };
 
 const HERO_IMG = "/about1.webp";

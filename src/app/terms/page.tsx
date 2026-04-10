@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions | Vihara - The Courtyard",
+export const metadata: Metadata = getPageMetadata({
+  title: "Terms & Conditions",
   description:
-    "Read the booking, stay, event, and property terms that apply to all Vihara reservations.",
-};
+    "Review the booking, stay, event, guest, and property terms that apply to reservations at Vihara - The Courtyard.",
+  path: "/terms",
+});
 
 const sections = [
   {

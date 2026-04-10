@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | Vihara - The Courtyard",
+export const metadata: Metadata = getPageMetadata({
+  title: "Privacy Policy",
   description:
-    "Learn how Vihara collects, uses, stores, and protects personal information shared through bookings, inquiries, and website visits.",
-};
+    "Read how Vihara collects, uses, stores, and protects personal information shared through bookings, inquiries, and website visits.",
+  path: "/privacy-policy",
+});
 
 const sections = [
   {

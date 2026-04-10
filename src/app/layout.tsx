@@ -3,14 +3,42 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/seo";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Vihara Courtyard Retreat Hyderabad | Private Events & Stays",
   description:
-    "Vihara is a peaceful courtyard retreat in Hyderabad offering curated wellness retreats, creative gatherings and slow-living experiences in a serene, inspiring space.",
-  keywords:
-    "vihara, courtyard, hyderabad, staycation, private events, celebrations, kothur",
+    "Vihara - The Courtyard is a peaceful retreat near Hyderabad for private stays, intimate celebrations, wellness retreats, and memorable gatherings.",
+  keywords: [
+    "Vihara",
+    "Vihara The Courtyard",
+    "Hyderabad retreat",
+    "private stay Hyderabad",
+    "event venue Hyderabad",
+    "staycation Hyderabad",
+    "courtyard venue",
+    "Kothur",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Vihara Courtyard Retreat Hyderabad | Private Events & Stays",
+    description:
+      "Vihara - The Courtyard is a peaceful retreat near Hyderabad for private stays, intimate celebrations, wellness retreats, and memorable gatherings.",
+    url: siteUrl,
+    siteName: "Vihara - The Courtyard",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vihara Courtyard Retreat Hyderabad | Private Events & Stays",
+    description:
+      "Vihara - The Courtyard is a peaceful retreat near Hyderabad for private stays, intimate celebrations, wellness retreats, and memorable gatherings.",
+  },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
