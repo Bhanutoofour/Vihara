@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { booking_id, status, admin_notes, name, email, phone, check_in, check_out, guests, total_amount, requests } = body;
+    const { booking_id, status, admin_notes, name, email, phone, check_in, check_out, guests, total_amount, paid_amount, requests } = body;
 
     // Build update object — only include fields that were sent
     const updateData: any = {};
@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     if (check_out !== undefined) updateData.check_out = check_out || null;
     if (guests !== undefined) updateData.guests = guests;
     if (total_amount !== undefined) updateData.total_amount = total_amount;
+    if (paid_amount !== undefined) updateData.paid_amount = Number(paid_amount) || 0;
     if (requests !== undefined) updateData.requests = requests;
 
     // Update DB

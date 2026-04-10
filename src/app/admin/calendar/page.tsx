@@ -22,11 +22,30 @@ const MONTHS = [
 
 const STATUS_COLORS: Record<BookingStatus, { bg: string; text: string; label: string }> = {
   pending_payment: { bg: "#fff8f0", text: "#B85C38", label: "Pending" },
+  half_payment_done: { bg: "#fff6e6", text: "#C27A1A", label: "Half Paid" },
   payment_uploaded: { bg: "#f0f4ff", text: "#3B5AC8", label: "Under Review" },
   confirmed: { bg: "#f0f9f4", text: "#2D7A4E", label: "Confirmed" },
   rejected: { bg: "#fff0f0", text: "#C83B3B", label: "Rejected" },
   cancelled: { bg: "#f5f5f5", text: "#888", label: "Cancelled" },
 };
+
+const PLANS = [
+  { label: "Up to 10 Guests", type: "staycation", weekday: 30000, weekend: 35000 },
+  { label: "Up to 15 Guests", type: "staycation", weekday: 40000, weekend: 48000 },
+  { label: "Up to 20 Guests", type: "staycation", weekday: 50000, weekend: 60000 },
+  { label: "Up to 50 Guests", type: "event", weekday: 60000, weekend: 75000 },
+  { label: "Up to 100 Guests", type: "event", weekday: 80000, weekend: 95000 },
+  { label: "4 Hours", type: "movie", weekday: 15000, weekend: 25000 },
+];
+
+function generateRef() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let ref = "VH-";
+  for (let i = 0; i < 8; i += 1) {
+    ref += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return ref;
+}
 
 function bookingOverlapsMonth(booking: Booking, year: number, month: number) {
   const monthStart = new Date(year, month, 1, 0, 0, 0, 0);
@@ -59,10 +78,61 @@ export default function AdminCalendarPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<"calendar" | "list">("calendar");
+  const [showManual, setShowManual] = useState(false);
+  const [manualError, setManualError] = useState("");
+  const [manualSaving, setManualSaving] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    requests: "",
+    check_in: "",
+    check_out: "",
+    plan_label: PLANS[0].label,
+    booking_type: "staycation" as "staycation" | "event" | "movie",
+    day_type: "weekday" as "weekday" | "weekend",
+    guests: 10,
+    status: "half_payment_done" as BookingStatus,
+    payment_method: "manual" as "manual" | "razorpay",
+    total_amount: 30000,
+    paid_amount: 15000,
+    balance_amount: 15000,
+  });
 
   useEffect(() => {
     fetchBookings();
   }, [currentYear, currentMonth]);
+
+  useEffect(() => {
+    const plan = PLANS.find((item) => item.label === manualForm.plan_label);
+    if (!plan) return;
+    const nights =
+      manualForm.check_in && manualForm.check_out
+        ? Math.max(
+            1,
+            Math.round(
+              (new Date(manualForm.check_out).getTime() -
+                new Date(manualForm.check_in).getTime()) /
+                86400000,
+            ),
+          )
+        : 1;
+    const base = manualForm.day_type === "weekday" ? plan.weekday : plan.weekend;
+    const total = base * (plan.type === "movie" ? 1 : nights);
+    const paid = Math.min(total, manualForm.paid_amount);
+    setManualForm((current) => ({
+      ...current,
+      total_amount: total,
+      booking_type: plan.type as "staycation" | "event" | "movie",
+      paid_amount: paid,
+      balance_amount: Math.max(0, total - paid),
+    }));
+  }, [
+    manualForm.plan_label,
+    manualForm.day_type,
+    manualForm.check_in,
+    manualForm.check_out,
+  ]);
 
   async function fetchBookings() {
     setLoading(true);
@@ -82,6 +152,59 @@ export default function AdminCalendarPage() {
       setBookings([]);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function createManualBooking() {
+    setManualError("");
+    if (!manualForm.name || !manualForm.email || !manualForm.phone || !manualForm.check_in) {
+      setManualError("Name, email, phone, and check-in are required.");
+      return;
+    }
+
+    setManualSaving(true);
+    try {
+      const booking_ref = generateRef();
+      const res = await fetch("/api/admin/manual-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ADMIN_TOKEN}`,
+        },
+        body: JSON.stringify({
+          ...manualForm,
+          booking_ref,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setManualError(data.error || "Failed to create booking.");
+        return;
+      }
+      setShowManual(false);
+      setManualForm({
+        name: "",
+        email: "",
+        phone: "",
+        requests: "",
+        check_in: "",
+        check_out: "",
+        plan_label: PLANS[0].label,
+        booking_type: "staycation",
+        day_type: "weekday",
+        guests: 10,
+        status: "half_payment_done",
+        payment_method: "manual",
+        total_amount: 30000,
+        paid_amount: 15000,
+        balance_amount: 15000,
+      });
+      await fetchBookings();
+    } catch (error: any) {
+      console.error(error);
+      setManualError(error.message || "Failed to create booking.");
+    } finally {
+      setManualSaving(false);
     }
   }
 
@@ -140,10 +263,16 @@ export default function AdminCalendarPage() {
           </p>
           <h1 className="text-2xl font-medium text-[#1a1a1a]">Calendar</h1>
           <p className="text-sm text-[#6f6a63] mt-1">
-            Monthly view of active bookings and occupied dates.
+            Monthly view of active bookings and manual booking creation.
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowManual(true)}
+            className="px-4 py-2 text-xs rounded-lg border border-[#2D4A3E] bg-[#2D4A3E] text-white"
+          >
+            + Manual Booking
+          </button>
           <button
             onClick={() => setActiveView("calendar")}
             className={`px-4 py-2 text-xs rounded-lg border ${
@@ -339,6 +468,160 @@ export default function AdminCalendarPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {showManual && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowManual(false);
+          }}
+        >
+          <div className="bg-white w-full max-w-2xl rounded-[16px] overflow-hidden shadow-xl">
+            <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
+                  Calendar
+                </p>
+                <p className="text-white font-medium text-lg">Create Manual Booking</p>
+              </div>
+              <button
+                onClick={() => setShowManual(false)}
+                className="text-white/60 hover:text-white text-xl leading-none"
+              >
+                x
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { label: "Name", key: "name", type: "text" },
+                  { label: "Phone", key: "phone", type: "text" },
+                  { label: "Email", key: "email", type: "email" },
+                  { label: "Guests", key: "guests", type: "number" },
+                  { label: "Check In", key: "check_in", type: "date" },
+                  { label: "Check Out", key: "check_out", type: "date" },
+                  { label: "Total Amount", key: "total_amount", type: "number" },
+                  { label: "Paid Amount", key: "paid_amount", type: "number" },
+                  { label: "Balance Amount", key: "balance_amount", type: "number" },
+                ].map((field) => (
+                  <div key={field.key}>
+                    <label className="text-xs text-[#555] mb-1 block">{field.label}</label>
+                    <input
+                      type={field.type}
+                      value={(manualForm as any)[field.key] ?? ""}
+                      onChange={(e) =>
+                        setManualForm((current) => {
+                          const value =
+                            field.type === "number" ? +e.target.value : e.target.value;
+                          const next = { ...current, [field.key]: value } as typeof current;
+                          if (field.key === "paid_amount") {
+                            next.balance_amount = Math.max(0, next.total_amount - Number(value || 0));
+                          }
+                          if (field.key === "total_amount") {
+                            next.balance_amount = Math.max(0, Number(value || 0) - next.paid_amount);
+                          }
+                          return next;
+                        })
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs text-[#555] mb-1 block">Package</label>
+                  <select
+                    value={manualForm.plan_label}
+                    onChange={(e) =>
+                      setManualForm((current) => ({
+                        ...current,
+                        plan_label: e.target.value,
+                      }))
+                    }
+                    className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                  >
+                    {PLANS.map((plan) => (
+                      <option key={plan.label} value={plan.label}>
+                        {plan.label} - {plan.type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-[#555] mb-1 block">Day Type</label>
+                  <select
+                    value={manualForm.day_type}
+                    onChange={(e) =>
+                      setManualForm((current) => ({
+                        ...current,
+                        day_type: e.target.value as "weekday" | "weekend",
+                      }))
+                    }
+                    className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                  >
+                    <option value="weekday">Weekday</option>
+                    <option value="weekend">Weekend</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-[#555] mb-1 block">Status</label>
+                  <select
+                    value={manualForm.status}
+                    onChange={(e) =>
+                      setManualForm((current) => ({
+                        ...current,
+                        status: e.target.value as BookingStatus,
+                      }))
+                    }
+                    className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                  >
+                    <option value="half_payment_done">Half Payment Done</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending_payment">Pending Payment</option>
+                    <option value="payment_uploaded">Payment Uploaded</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#555] mb-1 block">Special Requests</label>
+                <textarea
+                  rows={3}
+                  value={manualForm.requests}
+                  onChange={(e) =>
+                    setManualForm((current) => ({
+                      ...current,
+                      requests: e.target.value,
+                    }))
+                  }
+                  className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg resize-none"
+                />
+              </div>
+
+              {manualError && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+                  {manualError}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowManual(false)}
+                  className="flex-1 border border-[#ddd] text-[#555] py-2.5 text-sm rounded-lg hover:bg-[#f5f5f5] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={createManualBooking}
+                  disabled={manualSaving}
+                  className="flex-1 bg-[#2D4A3E] text-white py-2.5 text-sm rounded-lg hover:bg-[#1C3028] transition-colors disabled:opacity-40"
+                >
+                  {manualSaving ? "Creating..." : "Create Booking"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

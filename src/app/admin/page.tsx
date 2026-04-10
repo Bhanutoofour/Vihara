@@ -6,6 +6,7 @@ import { ADMIN_TOKEN } from "@/components/admin/config";
 
 const STATUS_COLORS: Record<BookingStatus, { bg: string; text: string; label: string }> = {
   pending_payment: { bg: "#fff8f0", text: "#B85C38", label: "Pending Payment" },
+  half_payment_done: { bg: "#fff6e6", text: "#C27A1A", label: "Half Payment Done" },
   payment_uploaded: { bg: "#f0f4ff", text: "#3B5AC8", label: "Payment Uploaded" },
   confirmed: { bg: "#f0f9f4", text: "#2D7A4E", label: "Confirmed" },
   rejected: { bg: "#fff0f0", text: "#C83B3B", label: "Rejected" },
@@ -17,6 +18,10 @@ export default function AdminBookingsPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<BookingStatus | "all">("all");
+  const [selected, setSelected] = useState<Booking | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Booking>>({});
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     fetchBookings();
@@ -35,6 +40,68 @@ export default function AdminBookingsPage() {
       setBookings([]);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function openEdit(booking: Booking) {
+    setSelected(booking);
+    setEditForm({
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      check_in: booking.check_in,
+      check_out: booking.check_out || "",
+      guests: booking.guests,
+      total_amount: booking.total_amount,
+      paid_amount: booking.paid_amount || 0,
+      balance_amount:
+        booking.balance_amount ??
+        Math.max(0, booking.total_amount - (booking.paid_amount || 0)),
+      status: booking.status,
+      requests: booking.requests || "",
+      admin_notes: booking.admin_notes || "",
+    });
+    setMessage("");
+  }
+
+  async function saveBooking() {
+    if (!selected) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/update-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${ADMIN_TOKEN}`,
+        },
+        body: JSON.stringify({
+          booking_id: selected.id,
+          ...editForm,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setMessage(data.error || "Failed to update booking.");
+        return;
+      }
+
+      const nextBooking = {
+        ...selected,
+        ...editForm,
+      } as Booking;
+      setBookings((current) =>
+        current.map((booking) =>
+          booking.id === selected.id ? nextBooking : booking,
+        ),
+      );
+      setSelected(nextBooking);
+      setMessage("Booking updated successfully.");
+    } catch (error: any) {
+      console.error(error);
+      setMessage(error.message || "Failed to update booking.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -66,7 +133,7 @@ export default function AdminBookingsPage() {
           </p>
           <h1 className="text-2xl font-medium text-[#1a1a1a]">Bookings</h1>
           <p className="text-sm text-[#6f6a63] mt-1">
-            Review direct bookings, payment status, and guest details.
+            Review direct bookings, payment status, and edit guest details.
           </p>
         </div>
         <button
@@ -81,7 +148,7 @@ export default function AdminBookingsPage() {
         {[
           { label: "Total", value: bookings.length, bg: "#fff" },
           { label: "Confirmed", value: counts.confirmed || 0, bg: "#f0f9f4" },
-          { label: "Pending", value: counts.pending_payment || 0, bg: "#fff8f0" },
+          { label: "Pending", value: (counts.pending_payment || 0) + (counts.half_payment_done || 0), bg: "#fff8f0" },
           { label: "Uploaded", value: counts.payment_uploaded || 0, bg: "#f0f4ff" },
           {
             label: "Revenue",
@@ -109,7 +176,7 @@ export default function AdminBookingsPage() {
           className="bg-white border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] transition-colors flex-1 rounded-lg"
         />
         <div className="flex gap-2 flex-wrap">
-          {(["all", "pending_payment", "payment_uploaded", "confirmed", "rejected", "cancelled"] as const).map((status) => (
+          {(["all", "pending_payment", "half_payment_done", "payment_uploaded", "confirmed", "rejected", "cancelled"] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -141,7 +208,7 @@ export default function AdminBookingsPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-[#eee] bg-[#fafafa]">
-                  {["Ref", "Guest", "Stay", "Payment", "Status", "Amount"].map((heading) => (
+                  {["Ref", "Guest", "Stay", "Payment", "Status", "Amount", "Action"].map((heading) => (
                     <th
                       key={heading}
                       className="text-left px-4 py-3 text-xs text-[#888] uppercase tracking-wider font-medium whitespace-nowrap"
@@ -189,10 +256,155 @@ export default function AdminBookingsPage() {
                     <td className="px-4 py-3 text-sm font-medium text-[#1a1a1a] whitespace-nowrap">
                       Rs. {booking.total_amount.toLocaleString("en-IN")}
                     </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => openEdit(booking)}
+                        className="text-xs text-[#2D4A3E] font-medium hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {selected && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelected(null);
+          }}
+        >
+          <div className="bg-white w-full max-w-2xl rounded-[16px] overflow-hidden shadow-xl">
+            <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
+                  Edit Booking
+                </p>
+                <p className="text-white font-medium text-lg font-mono">
+                  {selected.booking_ref}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-white/60 hover:text-white text-xl leading-none"
+              >
+                x
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { label: "Name", key: "name", type: "text" },
+                  { label: "Phone", key: "phone", type: "text" },
+                  { label: "Email", key: "email", type: "email" },
+                  { label: "Guests", key: "guests", type: "number" },
+                  { label: "Check In", key: "check_in", type: "date" },
+                  { label: "Check Out", key: "check_out", type: "date" },
+                  { label: "Total Amount", key: "total_amount", type: "number" },
+                  { label: "Paid Amount", key: "paid_amount", type: "number" },
+                  { label: "Balance Amount", key: "balance_amount", type: "number" },
+                ].map((field) => (
+                  <div key={field.key}>
+                    <label className="text-xs text-[#555] mb-1 block">{field.label}</label>
+                    <input
+                      type={field.type}
+                      value={(editForm as any)[field.key] ?? ""}
+                      onChange={(e) =>
+                        setEditForm((current) => ({
+                          ...current,
+                          [field.key]:
+                            field.type === "number" ? +e.target.value : e.target.value,
+                        }))
+                      }
+                      className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg"
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label className="text-xs text-[#555] mb-1 block">Status</label>
+                  <select
+                    value={(editForm.status as string) || selected.status}
+                    onChange={(e) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        status: e.target.value as BookingStatus,
+                      }))
+                    }
+                    className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg bg-white"
+                  >
+                    <option value="pending_payment">Pending Payment</option>
+                    <option value="half_payment_done">Half Payment Done</option>
+                    <option value="payment_uploaded">Payment Uploaded</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[#555] mb-1 block">Special Requests</label>
+                <textarea
+                  rows={3}
+                  value={(editForm.requests as string) ?? ""}
+                  onChange={(e) =>
+                    setEditForm((current) => ({
+                      ...current,
+                      requests: e.target.value,
+                    }))
+                  }
+                  className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-[#555] mb-1 block">Admin Notes</label>
+                <textarea
+                  rows={3}
+                  value={(editForm.admin_notes as string) ?? ""}
+                  onChange={(e) =>
+                    setEditForm((current) => ({
+                      ...current,
+                      admin_notes: e.target.value,
+                    }))
+                  }
+                  className="w-full border border-[#ddd] px-3 py-2 text-sm outline-none focus:border-[#2D4A3E] rounded-lg resize-none"
+                />
+              </div>
+
+              {message && (
+                <p
+                  className={`text-xs px-3 py-2 rounded-lg border ${
+                    message.toLowerCase().includes("success")
+                      ? "text-green-700 bg-green-50 border-green-200"
+                      : "text-red-600 bg-red-50 border-red-200"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelected(null)}
+                  className="flex-1 border border-[#ddd] text-[#555] py-2.5 text-sm rounded-lg hover:bg-[#f5f5f5] transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={saveBooking}
+                  disabled={saving}
+                  className="flex-1 bg-[#2D4A3E] text-white py-2.5 text-sm rounded-lg hover:bg-[#1C3028] transition-colors disabled:opacity-40"
+                >
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

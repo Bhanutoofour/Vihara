@@ -12,6 +12,7 @@ export const supabaseAdmin = typeof window === "undefined"
 
 export type BookingStatus =
   | "pending_payment"
+  | "half_payment_done"
   | "payment_uploaded"
   | "confirmed"
   | "rejected"

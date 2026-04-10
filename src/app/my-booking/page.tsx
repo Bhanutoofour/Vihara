@@ -4,6 +4,7 @@ import { supabase, Booking, BookingStatus } from "@/lib/supabase";
 
 const STATUS_LABEL: Record<BookingStatus, string> = {
   pending_payment: "Pending Payment",
+  half_payment_done: "Half Payment Done",
   payment_uploaded: "Payment Under Review",
   confirmed: "Confirmed ✓",
   rejected: "Not Confirmed",
@@ -15,6 +16,7 @@ const STATUS_COLOR: Record<
   { bg: string; text: string; border: string }
 > = {
   pending_payment: { bg: "#fff8f0", text: "#B85C38", border: "#f0e0c8" },
+  half_payment_done: { bg: "#fff6e6", text: "#C27A1A", border: "#f2d9ac" },
   payment_uploaded: { bg: "#f0f4ff", text: "#3B5AC8", border: "#c8d4f8" },
   confirmed: { bg: "#f0f9f4", text: "#2D7A4E", border: "#c8e8d4" },
   rejected: { bg: "#fff0f0", text: "#C83B3B", border: "#f8c8c8" },
@@ -342,6 +344,11 @@ export default function MyBookingPage() {
                         <div className="text-xs text-[#3B5AC8] bg-[#f0f4ff] border border-[#c8d4f8] px-3 py-2">
                           ⏳ Your payment screenshot has been received. Our team
                           will verify and confirm within 2–4 hours.
+                        </div>
+                      )}
+                      {b.status === "half_payment_done" && (
+                        <div className="text-xs text-[#C27A1A] bg-[#fff6e6] border border-[#f2d9ac] px-3 py-2">
+                          Half payment received. The remaining balance can be settled after usage as shared by the admin team.
                         </div>
                       )}
                       {b.status === "confirmed" && (
