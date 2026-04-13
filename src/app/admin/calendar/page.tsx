@@ -285,7 +285,7 @@ export default function AdminCalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.25em] text-[#B28B72] mb-2">
             Occupancy planner
@@ -295,7 +295,7 @@ export default function AdminCalendarPage() {
             Monthly view of active bookings and manual booking creation.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowManual(true)}
             className="px-4 py-2 text-xs rounded-lg border border-[#2D4A3E] bg-[#2D4A3E] text-white"
@@ -325,7 +325,7 @@ export default function AdminCalendarPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {[
           { label: "Bookings", value: bookings.length, sub: "active this month" },
           {
@@ -348,15 +348,15 @@ export default function AdminCalendarPage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-2 sm:justify-start">
           <button
             onClick={prevMonth}
             className="w-8 h-8 flex items-center justify-center border border-[#ddd] bg-white hover:bg-[#f5f5f5] rounded-lg"
           >
             {"<"}
           </button>
-          <span className="text-base font-medium text-[#1a1a1a] min-w-[180px] text-center">
+          <span className="min-w-0 flex-1 text-center text-base font-medium text-[#1a1a1a] sm:min-w-[180px] sm:flex-none">
             {MONTHS[currentMonth]} {currentYear}
           </span>
           <button
@@ -383,7 +383,65 @@ export default function AdminCalendarPage() {
           Loading bookings...
         </div>
       ) : activeView === "calendar" ? (
-        <div className="bg-white border border-[#eee] rounded-[16px] overflow-hidden">
+        <>
+          <div className="space-y-3 md:hidden">
+            {Array.from({ length: daysInMonth }).map((_, index) => {
+              const day = index + 1;
+              const date = new Date(currentYear, currentMonth, day);
+              const dayBookings = bookings.filter((booking) =>
+                bookingIncludesDay(booking, date),
+              );
+              const isToday = date.toDateString() === today.toDateString();
+
+              return (
+                <div
+                  key={day}
+                  className="rounded-[16px] border border-[#eee] bg-white p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#B28B72]">
+                        {DAYS[date.getDay()]}
+                      </p>
+                      <p className="mt-1 text-lg font-medium text-[#1a1a1a]">
+                        {day} {MONTHS[currentMonth]}
+                      </p>
+                    </div>
+                    {isToday && (
+                      <span className="rounded-full bg-[#2D4A3E] px-3 py-1 text-[11px] text-white">
+                        Today
+                      </span>
+                    )}
+                  </div>
+
+                  {dayBookings.length === 0 ? (
+                    <p className="mt-3 text-sm text-[#888]">No bookings.</p>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      {dayBookings.map((booking) => (
+                        <div
+                          key={`${booking.id}-${day}`}
+                          className="rounded-xl px-3 py-2"
+                          style={{
+                            background: STATUS_COLORS[booking.status].bg,
+                            color: STATUS_COLORS[booking.status].text,
+                          }}
+                        >
+                          <p className="text-sm font-medium">{booking.name}</p>
+                          <p className="text-[11px]">{booking.booking_ref}</p>
+                          <p className="text-[11px]">
+                            {booking.plan_label} / {booking.guests} guests
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-[16px] border border-[#eee] bg-white md:block">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-[#eee]">
@@ -456,19 +514,20 @@ export default function AdminCalendarPage() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       ) : bookings.length === 0 ? (
         <div className="bg-white border border-[#eee] rounded-[16px] px-6 py-16 text-center text-sm text-[#888]">
           No bookings this month.
         </div>
       ) : (
-        <div className="bg-white border border-[#eee] rounded-[16px] overflow-hidden">
+        <div className="overflow-hidden rounded-[16px] border border-[#eee] bg-white">
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="flex items-center gap-4 px-6 py-4 border-b border-[#f0f0f0] last:border-0"
+              className="flex flex-col gap-3 border-b border-[#f0f0f0] px-4 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4 sm:px-6"
             >
-              <div className="w-1 h-12 rounded-full bg-[#2D4A3E] flex-shrink-0" />
+              <div className="h-1 w-full rounded-full bg-[#2D4A3E] sm:h-12 sm:w-1 sm:flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="text-sm font-medium text-[#1a1a1a]">
@@ -502,13 +561,14 @@ export default function AdminCalendarPage() {
 
       {showManual && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowManual(false);
           }}
         >
-          <div className="bg-white w-full max-w-2xl rounded-[16px] overflow-hidden shadow-xl">
-            <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between">
+          <div className="mx-auto flex min-h-full w-full items-start justify-center py-4 sm:items-center">
+            <div className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-hidden rounded-[16px] bg-white shadow-xl">
+            <div className="flex items-center justify-between bg-[#2D4A3E] px-4 py-4 sm:px-6">
               <div>
                 <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
                   Calendar
@@ -522,7 +582,7 @@ export default function AdminCalendarPage() {
                 x
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="max-h-[calc(100vh-8rem)] space-y-4 overflow-y-auto p-4 sm:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   { label: "Name", key: "name", type: "text" },
@@ -665,7 +725,7 @@ export default function AdminCalendarPage() {
                 </p>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => setShowManual(false)}
                   className="flex-1 border border-[#ddd] text-[#555] py-2.5 text-sm rounded-lg hover:bg-[#f5f5f5] transition-colors"
@@ -680,6 +740,7 @@ export default function AdminCalendarPage() {
                   {manualSaving ? "Creating..." : "Create Booking"}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>

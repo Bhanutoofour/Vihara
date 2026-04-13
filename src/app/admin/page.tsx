@@ -144,7 +144,7 @@ export default function AdminBookingsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
         {[
           { label: "Total", value: bookings.length, bg: "#fff" },
           { label: "Confirmed", value: counts.confirmed || 0, bg: "#f0f9f4" },
@@ -167,7 +167,7 @@ export default function AdminBookingsPage() {
         ))}
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-3">
+      <div className="flex flex-col gap-3 xl:flex-row">
         <input
           type="text"
           placeholder="Search by guest, reference or phone..."
@@ -203,8 +203,66 @@ export default function AdminBookingsPage() {
           No bookings found.
         </div>
       ) : (
-        <div className="bg-white border border-[#eee] rounded-[16px] overflow-hidden">
-          <div className="overflow-x-auto">
+        <>
+          <div className="space-y-3 md:hidden">
+            {filtered.map((booking) => (
+              <div
+                key={booking.id}
+                className="rounded-[16px] border border-[#eee] bg-white p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs font-medium text-[#2D4A3E]">
+                      {booking.booking_ref}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-[#1a1a1a]">
+                      {booking.name}
+                    </p>
+                    <p className="text-xs text-[#888]">{booking.phone}</p>
+                    <p className="truncate text-xs text-[#888]">{booking.email}</p>
+                  </div>
+                  <span
+                    className="inline-flex rounded px-2 py-1 text-[11px] whitespace-nowrap"
+                    style={{
+                      background: STATUS_COLORS[booking.status].bg,
+                      color: STATUS_COLORS[booking.status].text,
+                    }}
+                  >
+                    {STATUS_COLORS[booking.status].label}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-[#555]">
+                  <div>
+                    <p className="text-[#888]">Stay</p>
+                    <p className="mt-1">{booking.check_in}</p>
+                    <p>{booking.check_out ? `to ${booking.check_out}` : "Single day"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#888]">Amount</p>
+                    <p className="mt-1 text-sm font-medium text-[#1a1a1a]">
+                      Rs. {booking.total_amount.toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[#888]">Payment</p>
+                    <p className="mt-1 break-words">
+                      {booking.payment_method || "-"} /{" "}
+                      {booking.payment_ref || booking.razorpay_payment_id || "-"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => openEdit(booking)}
+                  className="mt-4 w-full rounded-lg border border-[#2D4A3E] px-4 py-2 text-sm font-medium text-[#2D4A3E]"
+                >
+                  Edit Booking
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-[16px] border border-[#eee] bg-white md:block">
+            <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-[#eee] bg-[#fafafa]">
@@ -269,18 +327,20 @@ export default function AdminBookingsPage() {
               </tbody>
             </table>
           </div>
-        </div>
+          </div>
+        </>
       )}
 
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-3 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setSelected(null);
           }}
         >
-          <div className="bg-white w-full max-w-2xl rounded-[16px] overflow-hidden shadow-xl">
-            <div className="bg-[#2D4A3E] px-6 py-4 flex items-center justify-between">
+          <div className="mx-auto flex min-h-full w-full items-start justify-center py-4 sm:items-center">
+            <div className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-hidden rounded-[16px] bg-white shadow-xl">
+            <div className="flex items-center justify-between bg-[#2D4A3E] px-4 py-4 sm:px-6">
               <div>
                 <p className="text-[#D9B59D] text-xs uppercase tracking-widest">
                   Edit Booking
@@ -296,7 +356,7 @@ export default function AdminBookingsPage() {
                 x
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="max-h-[calc(100vh-8rem)] space-y-4 overflow-y-auto p-4 sm:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   { label: "Name", key: "name", type: "text" },
@@ -389,7 +449,7 @@ export default function AdminBookingsPage() {
                 </p>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={() => setSelected(null)}
                   className="flex-1 border border-[#ddd] text-[#555] py-2.5 text-sm rounded-lg hover:bg-[#f5f5f5] transition-colors"
@@ -404,6 +464,7 @@ export default function AdminBookingsPage() {
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>

@@ -50,7 +50,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-[#F5F1EA] pt-[92px] flex items-center justify-center text-sm text-[#888]">
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F1EA] px-4 pt-[92px] text-center text-sm text-[#888]">
         Loading admin panel...
       </div>
     );
@@ -58,8 +58,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-[#F5F1EA] pt-[92px] flex items-center justify-center px-4">
-        <div className="bg-white border border-[#eee] p-8 w-full max-w-sm rounded-[20px] shadow-[0_20px_60px_rgba(45,74,62,0.08)]">
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F1EA] px-4 py-8 pt-[92px]">
+        <div className="w-full max-w-sm rounded-[20px] border border-[#eee] bg-white p-6 shadow-[0_20px_60px_rgba(45,74,62,0.08)] sm:p-8">
           <div className="w-12 h-12 bg-[#2D4A3E] rounded-[14px] flex items-center justify-center mb-4">
             <span className="text-white text-xl">V</span>
           </div>
@@ -96,10 +96,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F1EA] text-[#1a1a1a] pt-[92px]">
+    <div className="min-h-screen bg-[#F5F1EA] pt-[92px] text-[#1a1a1a]">
       <div className="flex min-h-[calc(100vh-92px)] flex-col lg:flex-row">
-        <aside className="w-full lg:w-[280px] bg-[#24372F] text-white border-r border-white/10">
-          <div className="px-6 py-6 border-b border-white/10">
+        <aside className="w-full border-b border-white/10 bg-[#24372F] text-white lg:w-[280px] lg:border-b-0 lg:border-r">
+          <div className="border-b border-white/10 px-5 py-5 sm:px-6 sm:py-6">
             <p className="text-[#D9B59D] text-xs uppercase tracking-[0.3em] mb-2">
               Vihara
             </p>
@@ -109,7 +109,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
 
-          <nav className="px-4 py-5 space-y-2">
+          <nav className="flex gap-2 overflow-x-auto px-4 py-4 lg:block lg:space-y-2 lg:overflow-visible lg:px-4 lg:py-5">
             {ADMIN_NAV_ITEMS.map((item) => {
               const isActive =
                 item.href === "/admin"
@@ -120,7 +120,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`block rounded-2xl px-4 py-3 transition-colors ${
+                  className={`min-w-[180px] rounded-2xl px-4 py-3 transition-colors lg:block lg:min-w-0 ${
                     isActive
                       ? "bg-[#D9B59D] text-[#1a1a1a]"
                       : "hover:bg-white/10 text-white"
@@ -139,7 +139,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="px-4 pb-6 mt-auto">
+          <div className="mt-auto px-4 pb-5 lg:pb-6">
             <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
               <p className="text-xs uppercase tracking-[0.25em] text-white/50 mb-2">
                 Access
@@ -158,7 +158,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <main className="flex-1 min-w-0">
-          <div className="border-b border-[#e9e2d7] bg-[#F5F1EA]/95 backdrop-blur px-6 py-5">
+          <div className="border-b border-[#e9e2d7] bg-[#F5F1EA]/95 px-4 py-4 backdrop-blur sm:px-6 sm:py-5">
             <p className="text-xs uppercase tracking-[0.25em] text-[#B28B72] mb-2">
               Universal Admin
             </p>
